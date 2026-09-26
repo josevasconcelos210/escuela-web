@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Avisos escolares</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f5f8;
+            color: #333;
+        }
+
+        header {
+            background: #164d7a;
+            color: white;
+            text-align: center;
+            padding: 30px 15px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .titulo-seccion {
+            color: #164d7a;
+            margin-bottom: 25px;
+        }
+
+        .aviso {
+            background: white;
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+
+            box-shadow:
+                0 3px 10px rgba(0,0,0,.10);
+        }
+
+        .aviso h2 {
+            margin-top: 0;
+            color: #164d7a;
+        }
+
+        .fecha {
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        .botones {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .boton {
+            display: inline-block;
+            padding: 11px 18px;
+            border-radius: 7px;
+
+            text-decoration: none;
+            color: white;
+
+            background: #164d7a;
+        }
+
+        .boton:hover {
+            background: #0e3656;
+        }
+
+        .boton.descargar {
+            background: #238636;
+        }
+
+        .pdf {
+            width: 100%;
+            height: 650px;
+
+            margin-top: 20px;
+
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .cargando {
+            text-align: center;
+            padding: 30px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+        @media(max-width:600px) {
+
+            main {
+                padding: 0 12px;
+            }
+
+            .aviso {
+                padding: 18px;
+            }
+
+            .pdf {
+                height: 500px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>🏫 Colegio ABC</h1>
+
+    <p>
+        Avisos y comunicados para padres de familia
+    </p>
+
+</header>
+
+
+<main>
+
+    <h2 class="titulo-seccion">
+        📢 Avisos recientes
+    </h2>
+
+    <div id="avisos">
+
+        <div class="cargando">
+            Cargando avisos...
+        </div>
+
+    </div>
+
+</main>
+
+
+<footer>
+
+    Colegio ABC © 2026
+
+</footer>
+
+
+<script>
+
+async function cargarAvisos() {
+
+    const contenedor =
+        document.getElementById("avisos");
+
+    try {
+
+        /*
+         * Agregamos un parámetro para evitar
+         * que el navegador utilice una versión
+         * antigua del archivo.
+         */
+
+        const respuesta =
+            await fetch("avisos.json?v=" + Date.now());
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudo cargar avisos.json");
+        }
+
+        const avisos =
+            await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        if (avisos.length === 0) {
+
+            contenedor.innerHTML =
+                "<p>No hay avisos publicados.</p>";
+
+            return;
+        }
+
+        avisos.sort(
+            (a, b) =>
+            new Date(b.fecha) -
+            new Date(a.fecha)
+        );
+
+        avisos.forEach(aviso => {
+
+            const elemento =
+                document.createElement("article");
+
+            elemento.className = "aviso";
+
+            elemento.innerHTML = `
+
+                <h2>
+                    📢 ${escapeHTML(aviso.titulo)}
+                </h2>
+
+                <div class="fecha">
+                    Publicado:
+                    ${formatearFecha(aviso.fecha)}
+                </div>
+
+                <div class="botones">
+
+                    <a
+                        class="boton"
+                        href="${aviso.archivo}"
+                        target="_blank">
+
+                        👁 Ver PDF
+
+                    </a>
+
+                    <a
+                        class="boton descargar"
+                        href="${aviso.archivo}"
+                        download>
+
+                        ⬇ Descargar PDF
+
+                    </a>
+
+                </div>
+
+                <iframe
+                    class="pdf"
+                    src="${aviso.archivo}"
+                    loading="lazy">
+
+                </iframe>
+
+            `;
+
+            contenedor.appendChild(elemento);
+
+        });
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        contenedor.innerHTML = `
+            <div class="aviso">
+                No se pudieron cargar los avisos.
+            </div>
+        `;
+
+    }
+
+}
+
+
+function formatearFecha(fecha) {
+
+    const d = new Date(fecha);
+
+    return d.toLocaleDateString(
+        "es-MX",
+        {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }
+    );
+
+}
+
+
+function escapeHTML(texto) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent = texto;
+
+    return div.innerHTML;
+
+}
+
+
+cargarAvisos();
+
+</script>
+
+</body>
+
+</html>
