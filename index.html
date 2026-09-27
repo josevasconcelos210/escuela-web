@@ -3299,7 +3299,38 @@ cargarAvisos();
 
 
 </script>
+/* =====================================================
+  logo movimiento
+===================================================== */
 
+    <svg width="0" height="0">
+  <filter id="liquid">
+    <feTurbulence id="turb" baseFrequency="0.012" numOctaves="2" />
+    <feDisplacementMap in="SourceGraphic" scale="0" />
+  </filter>
+</svg>
+
+<img src="https://github.com/josevasconcelos210/escuela-web/blob/main/imagenesweb/logo_sec_transparente_v2.png" class="liquid-escudo" />
+
+<style>
+.liquid-escudo{ filter:url(#liquid); transition: filter .4s }
+.liquid-escudo:hover{ 
+  /* JS anima feTurbulence + scale */
+}
+</style>
+
+<script>
+const turb = document.getElementById('turb');
+const disp = document.querySelector('feDisplacementMap');
+let f=0;
+escudo.addEventListener('mouseenter',()=>{
+  gsap.to(disp, {attr:{scale:35}, duration:.6});
+  gsap.to(turb, {attr:{baseFrequency:0.04}, duration:.8});
+});
+</script>
+05
+ESCUDO QUE SE DESARMA EN CAPAS
+SCROLL • Z-SPACE • EXPLODED VIEW
 
 </body>
 
