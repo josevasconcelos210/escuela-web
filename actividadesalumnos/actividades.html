@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Consulta de actividades</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f3f6f9;
+            color: #1f2937;
+        }
+
+        .contenedor {
+            width: 95%;
+            max-width: 850px;
+            margin: 40px auto;
+        }
+
+        .encabezado {
+            background: #063b70;
+            color: white;
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+
+        .encabezado h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .encabezado p {
+            margin: 0;
+            font-size: 15px;
+        }
+
+        .buscador {
+            background: white;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
+        }
+
+        .buscador label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .buscador input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .boton {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #087fc1;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .boton:hover {
+            background: #063b70;
+        }
+
+        .resultado {
+            margin-top: 25px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
+            display: none;
+        }
+
+        .alumno {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .alumno h2 {
+            color: #063b70;
+            margin: 0 0 5px;
+        }
+
+        .datos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .dato {
+            background: #f3f6f9;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .dato strong {
+            display: block;
+            color: #063b70;
+            margin-bottom: 4px;
+        }
+
+        .actividades {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .actividades th {
+            background: #063b70;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .actividades td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .calificacion {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .mensaje {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .cargando {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .pie {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .datos {
+                grid-template-columns: 1fr;
+            }
+
+            .contenedor {
+                margin: 15px auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <div class="encabezado">
+        <h1>Consulta de actividades</h1>
+        <p>Escuela Secundaria José Vasconcelos No. 210</p>
+    </div>
+
+    <div class="buscador">
+
+        <label for="idAlumno">
+            ID del alumno
+        </label>
+
+        <input
+            type="text"
+            id="idAlumno"
+            placeholder="Escriba el ID del alumno"
+            autocomplete="off"
+        >
+
+        <button class="boton" onclick="buscarAlumno()">
+            CONSULTAR ACTIVIDADES
+        </button>
+
+        <div id="cargando" class="mensaje cargando">
+            Consultando información...
+        </div>
+
+        <div id="error" class="mensaje error">
+            No se encontró información para el alumno.
+        </div>
+
+    </div>
+
+
+    <div id="resultado" class="resultado">
+
+        <div class="alumno">
+
+            <h2 id="nombreAlumno">
+                Nombre del alumno
+            </h2>
+
+            <p>
+                <strong>ID:</strong>
+                <span id="mostrarID"></span>
+            </p>
+
+        </div>
+
+
+        <div class="datos">
+
+            <div class="dato">
+                <strong>Día:</strong>
+                <span id="dia1"></span>
+            </div>
+
+            <div class="dato">
+                <strong>Día:</strong>
+                <span id="dia2"></span>
+            </div>
+
+        </div>
+
+
+        <h3>
+            Actividades y calificaciones
+        </h3>
+
+        <table class="actividades">
+
+            <thead>
+                <tr>
+                    <th>Actividad</th>
+                    <th>Calificación</th>
+                </tr>
+            </thead>
+
+            <tbody id="tablaActividades">
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <div class="pie">
+        Consulta informativa para madres, padres y tutores.
+    </div>
+
+</div>
+
+
+<script>
+
+async function buscarAlumno() {
+
+    const id = document
+        .getElementById("idAlumno")
+        .value
+        .trim();
+
+    const resultado =
+        document.getElementById("resultado");
+
+    const error =
+        document.getElementById("error");
+
+    const cargando =
+        document.getElementById("cargando");
+
+    if (id === "") {
+
+        error.textContent =
+            "Escriba el ID del alumno.";
+
+        error.style.display = "block";
+
+        resultado.style.display = "none";
+
+        return;
+    }
+
+
+    error.style.display = "none";
+
+    resultado.style.display = "none";
+
+    cargando.style.display = "block";
+
+
+    try {
+
+        /*
+         * AQUÍ COLOCAREMOS LA URL DEL
+         * SERVICIO QUE CONSULTARÁ EXCEL.
+         *
+         * Ejemplo:
+         *
+         * const API =
+         * "https://.../consulta?id=" +
+         * encodeURIComponent(id);
+         */
+
+        const API =
+            "URL_DE_TU_API?id=" +
+            encodeURIComponent(id);
+
+
+        const respuesta =
+            await fetch(API);
+
+
+        if (!respuesta.ok) {
+            throw new Error("Error en la consulta");
+        }
+
+
+        const datos =
+            await respuesta.json();
+
+
+        cargando.style.display = "none";
+
+
+        if (!datos.encontrado) {
+
+            error.textContent =
+                "No se encontró un alumno con ese ID.";
+
+            error.style.display = "block";
+
+            return;
+        }
+
+
+        /*
+         * DATOS DEL ALUMNO
+         */
+
+        document.getElementById("mostrarID")
+            .textContent = datos.id;
+
+        document.getElementById("nombreAlumno")
+            .textContent = datos.nombre;
+
+        document.getElementById("dia1")
+            .textContent = datos.dia1;
+
+        document.getElementById("dia2")
+            .textContent = datos.dia2;
+
+
+        /*
+         * ACTIVIDADES
+         */
+
+        const tabla =
+            document.getElementById(
+                "tablaActividades"
+            );
+
+        tabla.innerHTML = "";
+
+
+        datos.actividades.forEach(
+            function(actividad) {
+
+                const fila =
+                    document.createElement("tr");
+
+
+                const nombre =
+                    document.createElement("td");
+
+                nombre.textContent =
+                    actividad.nombre;
+
+
+                const calificacion =
+                    document.createElement("td");
+
+                calificacion.textContent =
+                    actividad.calificacion;
+
+                calificacion.className =
+                    "calificacion";
+
+
+                fila.appendChild(nombre);
+
+                fila.appendChild(calificacion);
+
+                tabla.appendChild(fila);
+
+            }
+        );
+
+
+        resultado.style.display =
+            "block";
+
+    }
+
+    catch (errorConsulta) {
+
+        console.error(errorConsulta);
+
+        cargando.style.display = "none";
+
+        error.textContent =
+            "No fue posible consultar la información. Intente nuevamente.";
+
+        error.style.display = "block";
+    }
+
+}
+
+</script>
+
+</body>
+</html>
